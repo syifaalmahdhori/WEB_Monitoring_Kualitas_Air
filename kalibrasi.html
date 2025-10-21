@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="id" data-bs-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kalibrasi MF — Fuzzy Sugeno</title>
+
+  <!-- Bootstrap & Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+  <!-- Burger FAB (floating, mobile only) -->
+  <button id="btnBurger"
+          class="burger-fab d-lg-none"
+          type="button"
+          aria-label="Buka sidebar"
+          aria-controls="rail"
+          aria-expanded="false">
+    <i class="bi bi-list"></i>
+  </button>
+  <!-- ===== SIDEBAR ===== -->
+  <aside id="rail" class="rail" role="navigation" aria-label="Sidebar">
+    <a href="#" class="rail__brand">
+      <span class="rail__logo">AQ</span>
+      <span class="rail__title">Air Quality</span>
+    </a>
+
+    <div class="rail__actions">
+      <button id="btnExpand" class="btn rail__btn" type="button" aria-expanded="false">
+        <i class="bi bi-layout-sidebar"></i><span class="d-none d-lg-inline">Perlebar</span>
+      </button>
+      <button id="btnTheme" class="btn rail__btn" type="button" aria-pressed="false" aria-label="Ganti tema">
+        <i class="bi bi-moon-stars"></i><span class="d-none d-lg-inline">Tema</span>
+      </button>
+    </div>
+
+    <nav class="rail__nav" id="navPrimary">
+      <a class="nav-item" href="index.html">
+        <i class="nav-item__icon bi bi-speedometer2"></i><span class="nav-item__label">Dashboard</span>
+      </a>
+      <a class="nav-item" href="inputs.html">
+        <i class="nav-item__icon bi bi-sliders"></i><span class="nav-item__label">Input Sensor</span>
+      </a>
+      <a class="nav-item" href="kalibrasi.html" aria-current="page">
+        <i class="nav-item__icon bi bi-toggles2"></i><span class="nav-item__label">Kalibrasi MF</span>
+      </a>
+      <a class="nav-item" href="riwayat.html">
+        <i class="nav-item__icon bi bi-clock-history"></i><span class="nav-item__label">Riwayat</span>
+      </a>
+      <a class="nav-item" href="tentang.html">
+        <i class="nav-item__icon bi bi-info-circle"></i><span class="nav-item__label">Tentang</span>
+      </a>
+    </nav>
+
+    <div class="rail__section">
+      <nav class="rail__nav" id="navSecondary">
+        <a class="nav-item" href="export.html">
+          <i class="nav-item__icon bi bi-download"></i><span class="nav-item__label">Export</span>
+        </a>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main id="content" class="content-offset">
+    <div class="container py-4">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+        <h1 class="h3 fw-bold mb-0 section-title">Kalibrasi Membership Function</h1>
+        <div class="d-flex gap-2">
+          <button id="btnPresetDefault" class="btn btn-soft btn-sm"><i class="bi bi-magic me-1"></i>Preset: Default</button>
+          <button id="btnPresetTight" class="btn btn-soft btn-sm"><i class="bi bi-sliders me-1"></i>Preset: Ketat</button>
+          <button id="btnPresetAquarium" class="btn btn-soft btn-sm"><i class="bi bi-droplet me-1"></i>Preset: Akuarium</button>
+        </div>
+      </div>
+
+      <!-- pH -->
+      <div class="card p-3 mb-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h5 class="mb-0">pH</h5>
+          <span class="mf-badge">Semesta: 0 – 14</span>
+        </div>
+        <div class="row g-3">
+          <div class="col-lg-7">
+            <div class="chart-wrap"><canvas id="chartPH"></canvas></div>
+          </div>
+          <div class="col-lg-5">
+            <div class="row g-2 mf-field">
+              <!-- Asam: trap a,b,c,d -->
+              <div class="col-12"><div class="fw-semibold small mb-1">Asam (trap)</div></div>
+              <div class="col-6">
+                <label class="form-label small">a</label>
+                <input type="number" step="0.1" class="form-control" id="ph_asam_a">
+              </div>
+              <div class="col-6">
+                <label class="form-label small">b</label>
+                <input type="number" step="0.1" class="form-control" id="ph_asam_b">
+              </div>
+              <div class="col-6">
+                <label class="form-label small">c</label>
+                <input type="number" step="0.1" class="form-control" id="ph_asam_c">
+              </div>
+              <div class="col-6">
+                <label class="form-label small">d</label>
+                <input type="number" step="0.1" class="form-control" id="ph_asam_d">
+              </div>
+
+              <!-- Netral: tri a,b,c -->
+              <div class="col-12 pt-2"><div class="fw-semibold small mb-1">Netral (tri)</div></div>
+              <div class="col-4">
+                <label class="form-label small">a</label>
+                <input type="number" step="0.1" class="form-control" id="ph_netral_a">
+              </div>
+              <div class="col-4">
+                <label class="form-label small">b</label>
+                <input type="number" step="0.1" class="form-control" id="ph_netral_b">
+              </div>
+              <div class="col-4">
+                <label class="form-label small">c</label>
+                <input type="number" step="0.1" class="form-control" id="ph_netral_c">
+              </div>
+
+              <!-- Basa: trap a,b,c,d -->
+              <div class="col-12 pt-2"><div class="fw-semibold small mb-1">Basa (trap)</div></div>
+              <div class="col-6">
+                <label class="form-label small">a</label>
+                <input type="number" step="0.1" class="form-control" id="ph_basa_a">
+              </div>
+              <div class="col-6">
+                <label class="form-label small">b</label>
+                <input type="number" step="0.1" class="form-control" id="ph_basa_b">
+              </div>
+              <div class="col-6">
+                <label class="form-label small">c</label>
+                <input type="number" step="0.1" class="form-control" id="ph_basa_c">
+              </div>
+              <div class="col-6">
+                <label class="form-label small">d</label>
+                <input type="number" step="0.1" class="form-control" id="ph_basa_d">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NTU -->
+      <div class="card p-3 mb-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h5 class="mb-0">Kekeruhan (NTU)</h5>
+          <span class="mf-badge">Semesta: 0 – 1000</span>
+        </div>
+        <div class="row g-3">
+          <div class="col-lg-7"><div class="chart-wrap"><canvas id="chartNTU"></canvas></div></div>
+          <div class="col-lg-5">
+            <div class="row g-2 mf-field">
+              <div class="col-12"><div class="fw-semibold small mb-1">Jernih (trap)</div></div>
+              <div class="col-6"><label class="form-label small">a</label><input type="number" step="1" class="form-control" id="ntu_jernih_a"></div>
+              <div class="col-6"><label class="form-label small">b</label><input type="number" step="1" class="form-control" id="ntu_jernih_b"></div>
+              <div class="col-6"><label class="form-label small">c</label><input type="number" step="1" class="form-control" id="ntu_jernih_c"></div>
+              <div class="col-6"><label class="form-label small">d</label><input type="number" step="1" class="form-control" id="ntu_jernih_d"></div>
+
+              <div class="col-12 pt-2"><div class="fw-semibold small mb-1">Sedang (tri)</div></div>
+              <div class="col-4"><label class="form-label small">a</label><input type="number" step="1" class="form-control" id="ntu_sedang_a"></div>
+              <div class="col-4"><label class="form-label small">b</label><input type="number" step="1" class="form-control" id="ntu_sedang_b"></div>
+              <div class="col-4"><label class="form-label small">c</label><input type="number" step="1" class="form-control" id="ntu_sedang_c"></div>
+
+              <div class="col-12 pt-2"><div class="fw-semibold small mb-1">Keruh (trap)</div></div>
+              <div class="col-6"><label class="form-label small">a</label><input type="number" step="1" class="form-control" id="ntu_keruh_a"></div>
+              <div class="col-6"><label class="form-label small">b</label><input type="number" step="1" class="form-control" id="ntu_keruh_b"></div>
+              <div class="col-6"><label class="form-label small">c</label><input type="number" step="1" class="form-control" id="ntu_keruh_c"></div>
+              <div class="col-6"><label class="form-label small">d</label><input type="number" step="1" class="form-control" id="ntu_keruh_d"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Suhu -->
+      <div class="card p-3 mb-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h5 class="mb-0">Suhu (°C)</h5>
+          <span class="mf-badge">Semesta: 0 – 40</span>
+        </div>
+        <div class="row g-3">
+          <div class="col-lg-7"><div class="chart-wrap"><canvas id="chartTEMP"></canvas></div></div>
+          <div class="col-lg-5">
+            <div class="row g-2 mf-field">
+              <div class="col-12"><div class="fw-semibold small mb-1">Dingin (trap)</div></div>
+              <div class="col-6"><label class="form-label small">a</label><input type="number" step="0.1" class="form-control" id="t_dingin_a"></div>
+              <div class="col-6"><label class="form-label small">b</label><input type="number" step="0.1" class="form-control" id="t_dingin_b"></div>
+              <div class="col-6"><label class="form-label small">c</label><input type="number" step="0.1" class="form-control" id="t_dingin_c"></div>
+              <div class="col-6"><label class="form-label small">d</label><input type="number" step="0.1" class="form-control" id="t_dingin_d"></div>
+
+              <div class="col-12 pt-2"><div class="fw-semibold small mb-1">Nyaman (tri)</div></div>
+              <div class="col-4"><label class="form-label small">a</label><input type="number" step="0.1" class="form-control" id="t_nyaman_a"></div>
+              <div class="col-4"><label class="form-label small">b</label><input type="number" step="0.1" class="form-control" id="t_nyaman_b"></div>
+              <div class="col-4"><label class="form-label small">c</label><input type="number" step="0.1" class="form-control" id="t_nyaman_c"></div>
+
+              <div class="col-12 pt-2"><div class="fw-semibold small mb-1">Panas (trap)</div></div>
+              <div class="col-6"><label class="form-label small">a</label><input type="number" step="0.1" class="form-control" id="t_panas_a"></div>
+              <div class="col-6"><label class="form-label small">b</label><input type="number" step="0.1" class="form-control" id="t_panas_b"></div>
+              <div class="col-6"><label class="form-label small">c</label><input type="number" step="0.1" class="form-control" id="t_panas_c"></div>
+              <div class="col-6"><label class="form-label small">d</label><input type="number" step="0.1" class="form-control" id="t_panas_d"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="d-flex flex-wrap gap-2 justify-content-end">
+        <div class="input-group input-group-sm" style="max-width: 260px;">
+          <span class="input-group-text"><i class="bi bi-save2"></i></span>
+          <input id="profileName" class="form-control" placeholder="Nama profil (mis. Lab A)">
+          <button id="btnSaveProfile" class="btn btn-success">Simpan</button>
+        </div>
+
+        <div class="input-group input-group-sm" style="max-width: 220px;">
+          <label class="input-group-text" for="selectProfile"><i class="bi bi-collection"></i></label>
+          <select id="selectProfile" class="form-select"><option value="">Muat profil…</option></select>
+          <button id="btnDeleteProfile" class="btn btn-outline-danger"><i class="bi bi-trash"></i></button>
+        </div>
+
+        <button id="btnExport" class="btn btn-outline-primary btn-sm"><i class="bi bi-upload me-1"></i>Export JSON</button>
+        <label class="btn btn-outline-secondary btn-sm mb-0">
+          <i class="bi bi-download me-1"></i>Import JSON
+          <input id="fileImport" type="file" accept="application/json" hidden>
+        </label>
+        <button id="btnReset" class="btn btn-outline-warning btn-sm"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset Default</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- JS libs -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+  <script>
+    const $ = (q, s=document) => s.querySelector(q);
+    const $$ = (q, s=document) => Array.from(s.querySelectorAll(q));
+    const root = document.documentElement;
+
+    /* ===== Sidebar & Theme ===== */
+    const rail = $('#rail'), content = $('#content'), btnExpand = $('#btnExpand'), btnTheme = $('#btnTheme');
+    const EXPAND_KEY='railExpanded', THEME_KEY='aqTheme';
+    const expanded = localStorage.getItem(EXPAND_KEY)==='true';
+    if (expanded){ rail.classList.add('rail--expanded'); content?.classList.add('content-offset--expanded'); btnExpand?.setAttribute('aria-expanded','true'); }
+    btnExpand?.addEventListener('click', ()=>{ const isExpanded=rail.classList.toggle('rail--expanded'); content?.classList.toggle('content-offset--expanded'); btnExpand.setAttribute('aria-expanded', String(isExpanded)); localStorage.setItem(EXPAND_KEY,String(isExpanded)); });
+    if (!localStorage.getItem(THEME_KEY) && window.matchMedia('(prefers-color-scheme: dark)').matches){ root.setAttribute('data-bs-theme','dark'); }
+    const savedTheme = localStorage.getItem(THEME_KEY); if (savedTheme) root.setAttribute('data-bs-theme', savedTheme);
+    btnTheme?.addEventListener('click', ()=>{ const next=root.getAttribute('data-bs-theme')==='dark'?'light':'dark'; root.setAttribute('data-bs-theme',next); localStorage.setItem(THEME_KEY,next); refreshAllCharts(); });
+
+    /* ===== Helpers MF ===== */
+    const MF_DEFAULT = {
+      ph:   { asam:{a:0,b:0,c:5.5,d:6.5}, netral:{a:6.5,b:7.0,c:8.5}, basa:{a:8.0,b:9.0,c:14,d:14} },
+      ntu:  { jernih:{a:0,b:0,c:5,d:25},  sedang:{a:20,b:100,c:300},   keruh:{a:250,b:400,c:1000,d:1000} },
+      temp: { dingin:{a:0,b:0,c:18,d:24}, nyaman:{a:22,b:27,c:32},     panas:{a:30,b:33,c:40,d:40} }
+    };
+    const MF_TIGHT = {
+      ph:   { asam:{a:0,b:0,c:5.4,d:6.4}, netral:{a:6.7,b:7.0,c:7.6},  basa:{a:8.4,b:9.2,c:14,d:14} },
+      ntu:  { jernih:{a:0,b:0,c:3,d:10},  sedang:{a:8,b:60,c:150},     keruh:{a:120,b:250,c:1000,d:1000} },
+      temp: { dingin:{a:0,b:0,c:20,d:24}, nyaman:{a:25,b:27,c:29},     panas:{a:30,b:33,c:40,d:40} }
+    };
+    const MF_AQUA = {
+      ph:   { asam:{a:0,b:0,c:6.0,d:6.6}, netral:{a:6.6,b:7.2,c:7.8},  basa:{a:7.8,b:8.6,c:14,d:14} },
+      ntu:  { jernih:{a:0,b:0,c:2,d:8},   sedang:{a:6,b:20,c:60},      keruh:{a:50,b:100,c:1000,d:1000} },
+      temp: { dingin:{a:0,b:0,c:23,d:25}, nyaman:{a:24,b:26.5,c:28.5}, panas:{a:28.5,b:31,c:40,d:40} }
+    };
+
+    // Field map: id -> object path
+    const fields = {
+      // pH
+      ph_asam_a:'ph.asam.a', ph_asam_b:'ph.asam.b', ph_asam_c:'ph.asam.c', ph_asam_d:'ph.asam.d',
+      ph_netral_a:'ph.netral.a', ph_netral_b:'ph.netral.b', ph_netral_c:'ph.netral.c',
+      ph_basa_a:'ph.basa.a', ph_basa_b:'ph.basa.b', ph_basa_c:'ph.basa.c', ph_basa_d:'ph.basa.d',
+      // NTU
+      ntu_jernih_a:'ntu.jernih.a', ntu_jernih_b:'ntu.jernih.b', ntu_jernih_c:'ntu.jernih.c', ntu_jernih_d:'ntu.jernih.d',
+      ntu_sedang_a:'ntu.sedang.a', ntu_sedang_b:'ntu.sedang.b', ntu_sedang_c:'ntu.sedang.c',
+      ntu_keruh_a:'ntu.keruh.a', ntu_keruh_b:'ntu.keruh.b', ntu_keruh_c:'ntu.keruh.c', ntu_keruh_d:'ntu.keruh.d',
+      // TEMP
+      t_dingin_a:'temp.dingin.a', t_dingin_b:'temp.dingin.b', t_dingin_c:'temp.dingin.c', t_dingin_d:'temp.dingin.d',
+      t_nyaman_a:'temp.nyaman.a', t_nyaman_b:'temp.nyaman.b', t_nyaman_c:'temp.nyaman.c',
+      t_panas_a:'temp.panas.a', t_panas_b:'temp.panas.b', t_panas_c:'temp.panas.c', t_panas_d:'temp.panas.d'
+    };
+
+    let MF = JSON.parse(JSON.stringify(MF_DEFAULT));
+
+    function get(obj, path){ return path.split('.').reduce((o,k)=>o?.[k], obj); }
+    function set(obj, path, val){ const ks=path.split('.'); let o=obj; for(let i=0;i<ks.length-1;i++) o=o[ks[i]]; o[ks.at(-1)]=val; }
+    function loadToFields(){
+      for(const [id,path] of Object.entries(fields)){
+        const el = document.getElementById(id);
+        el.value = get(MF, path);
+      }
+    }
+    function readFromFields(){
+      for(const [id,path] of Object.entries(fields)){
+        const el = document.getElementById(id);
+        const v = Number(el.value);
+        if (!Number.isNaN(v)) set(MF, path, v);
+      }
+    }
+
+    /* ===== Chart builders ===== */
+    const ctxPH = document.getElementById('chartPH');
+    const ctxNTU= document.getElementById('chartNTU');
+    const ctxTEMP=document.getElementById('chartTEMP');
+    let chPH, chNTU, chTEMP;
+
+    function tri(x,a,b,c){ if (x<=a||x>=c) return 0; if (x===b) return 1; if (x>a&&x<b) return (x-a)/(b-a); if (x>b&&x<c) return (c-x)/(c-b); return 0; }
+    function trap(x,a,b,c,d){ if (x<=a||x>=d) return 0; if (x>=b&&x<=c) return 1; if (x>a&&x<b) return (x-a)/(b-a); if (x>c&&x<d) return (d-x)/(d-c); return 0; }
+
+    function sample(domainMin, domainMax, step, mfFns){
+      const xs=[], ys=mfFns.map(()=>[]);
+      for(let x=domainMin; x<=domainMax+1e-9; x+=step){
+        xs.push(+x.toFixed(3));
+        mfFns.forEach((fn,i)=> ys[i].push(+fn(x).toFixed(3)));
+      }
+      return {xs, ys};
+    }
+
+    function chartColors(){
+      const cs = getComputedStyle(root);
+      return { text: cs.getPropertyValue('--chart-txt').trim(), grid: cs.getPropertyValue('--chart-grid').trim(), bg: cs.getPropertyValue('--chart-bg').trim() };
+    }
+
+    function buildChart(ctx, labels, datasets){
+      const C = chartColors();
+      const ch = new Chart(ctx, {
+        type:'line',
+        data:{ labels, datasets },
+        options:{
+          responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+          plugins:{ legend:{ labels:{ color:C.text, font:{weight:'600'} } }, tooltip:{enabled:true} },
+          scales:{
+            x:{ ticks:{color:C.text}, grid:{color:C.grid} },
+            y:{ ticks:{color:C.text}, grid:{color:C.grid}, min:0, max:1 }
+          }
+        }
+      });
+      ctx.style.background = C.bg;
+      return ch;
+    }
+
+    function refreshChartTheme(){
+      const C = chartColors();
+      [chPH,chNTU,chTEMP].forEach(ch=>{
+        if(!ch) return;
+        ch.options.plugins.legend.labels.color = C.text;
+        ch.options.scales.x.ticks.color = C.text;
+        ch.options.scales.x.grid.color = C.grid;
+        ch.options.scales.y.ticks.color = C.text;
+        ch.options.scales.y.grid.color = C.grid;
+        ch.canvas.style.background = C.bg;
+        ch.update('none');
+      });
+    }
+    function refreshAllCharts(){ refreshChartTheme(); renderAll(); }
+
+    function renderPH(){
+      const f = MF.ph;
+      const data = sample(0,14,0.1,[
+        x=>trap(x,f.asam.a,f.asam.b,f.asam.c,f.asam.d),
+        x=>tri (x,f.netral.a,f.netral.b,f.netral.c),
+        x=>trap(x,f.basa.a,f.basa.b,f.basa.c,f.basa.d)
+      ]);
+      const ds = [
+        {label:'Asam', data:data.ys[0], borderColor:'#e03131', backgroundColor:'transparent', tension:.25, borderWidth:2, pointRadius:0},
+        {label:'Netral', data:data.ys[1], borderColor:'#15aabf', backgroundColor:'transparent', tension:.25, borderWidth:2, pointRadius:0},
+        {label:'Basa', data:data.ys[2], borderColor:'#845ef7', backgroundColor:'transparent', tension:.25, borderWidth:2, pointRadius:0},
+      ];
+      if(!chPH) chPH = buildChart(ctxPH, data.xs, ds);
+      else { chPH.data.labels=data.xs; chPH.data.datasets=ds; chPH.update('none'); }
+    }
+    function renderNTU(){
+      const f = MF.ntu;
+      const data = sample(0,1000,5,[
+        x=>trap(x,f.jernih.a,f.jernih.b,f.jernih.c,f.jernih.d),
+        x=>tri (x,f.sedang.a,f.sedang.b,f.sedang.c),
+        x=>trap(x,f.keruh.a,f.keruh.b,f.keruh.c,f.keruh.d)
+      ]);
+      const ds = [
+        {label:'Jernih', data:data.ys[0], borderColor:'#12b886', backgroundColor:'transparent', tension:.25, borderWidth:2, pointRadius:0},
+        {label:'Sedang', data:data.ys[1], borderColor:'#ffa94d', backgroundColor:'transparent', tension:.25, borderWidth:2, pointRadius:0},
+        {label:'Keruh',  data:data.ys[2], borderColor:'#f03e3e', backgroundColor:'transparent', tension:.25, borderWidth:2, pointRadius:0},
+      ];
+      if(!chNTU) chNTU = buildChart(ctxNTU, data.xs, ds);
+      else { chNTU.data.labels=data.xs; chNTU.data.datasets=ds; chNTU.update('none'); }
+    }
+    function renderTEMP(){
+      const f = MF.temp;
+      const data = sample(0,40,0.2,[
+        x=>trap(x,f.dingin.a,f.dingin.b,f.dingin.c,f.dingin.d),
+        x=>tri (x,f.nyaman.a,f.nyaman.b,f.nyaman.c),
+        x=>trap(x,f.panas.a,f.panas.b,f.panas.c,f.panas.d)
+      ]);
+      const ds = [
+        {label:'Dingin', data:data.ys[0], borderColor:'#329af0', backgroundColor:'transparent', tension:.25, borderWidth:2, pointRadius:0},
+        {label:'Nyaman', data:data.ys[1], borderColor:'#40c057', backgroundColor:'transparent', tension:.25, borderWidth:2, pointRadius:0},
+        {label:'Panas',  data:data.ys[2], borderColor:'#ff6b6b', backgroundColor:'transparent', tension:.25, borderWidth:2, pointRadius:0},
+      ];
+      if(!chTEMP) chTEMP = buildChart(ctxTEMP, data.xs, ds);
+      else { chTEMP.data.labels=data.xs; chTEMP.data.datasets=ds; chTEMP.update('none'); }
+    }
+    function renderAll(){ renderPH(); renderNTU(); renderTEMP(); }
+
+    /* ===== Events: fields -> MF -> render ===== */
+    function bindFields(){
+      for(const id of Object.keys(fields)){
+        document.getElementById(id).addEventListener('input', ()=>{
+          readFromFields();
+          renderAll();
+        });
+      }
+    }
+
+    /* ===== Preset & storage ===== */
+    function applyPreset(p){ MF = JSON.parse(JSON.stringify(p)); loadToFields(); renderAll(); }
+    $('#btnPresetDefault').addEventListener('click', ()=>applyPreset(MF_DEFAULT));
+    $('#btnPresetTight').addEventListener('click',   ()=>applyPreset(MF_TIGHT));
+    $('#btnPresetAquarium').addEventListener('click',()=>applyPreset(MF_AQUA));
+
+    const STORAGE_KEY = 'aq_mf_profiles';
+    function loadProfiles(){ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+    function saveProfiles(obj){ localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); }
+    function refreshProfileSelect(){
+      const sel = $('#selectProfile'); const prof = loadProfiles();
+      sel.innerHTML = '<option value="">Muat profil…</option>' + Object.keys(prof).map(k=>`<option>${k}</option>`).join('');
+    }
+    $('#btnSaveProfile').addEventListener('click', ()=>{
+      const name = $('#profileName').value.trim(); if(!name) return alert('Nama profil kosong.');
+      const prof = loadProfiles(); prof[name] = MF; saveProfiles(prof); refreshProfileSelect();
+      const toast = bootstrap.Toast ? new bootstrap.Toast(Object.assign(document.createElement('div'),{className:'toast'})) : null;
+      alert('Profil tersimpan: '+name);
+    });
+    $('#selectProfile').addEventListener('change', (e)=>{
+      const name = e.target.value; if(!name) return;
+      const prof = loadProfiles(); if(prof[name]){ MF = prof[name]; loadToFields(); renderAll(); }
+    });
+    $('#btnDeleteProfile').addEventListener('click', ()=>{
+      const sel = $('#selectProfile'); const name = sel.value; if(!name) return;
+      const prof = loadProfiles(); delete prof[name]; saveProfiles(prof); refreshProfileSelect(); sel.value='';
+    });
+
+    // Export / Import
+    $('#btnExport').addEventListener('click', ()=>{
+      const blob = new Blob([JSON.stringify(MF,null,2)], {type:'application/json'});
+      const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'mf_profile.json' });
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+    });
+    $('#fileImport').addEventListener('change', (e)=>{
+      const f = e.target.files[0]; if(!f) return;
+      const r = new FileReader();
+      r.onload = ()=>{ try{ MF = JSON.parse(r.result); loadToFields(); renderAll(); } catch(err){ alert('File tidak valid'); } };
+      r.readAsText(f);
+    });
+
+    /* ===== Init ===== */
+    function initThemeObserver(){ new MutationObserver(refreshAllCharts).observe(root,{attributes:true, attributeFilter:['data-bs-theme']}); }
+    function init(){
+      MF = JSON.parse(JSON.stringify(MF_DEFAULT));
+      loadToFields();
+      bindFields();
+      renderAll();
+      refreshProfileSelect();
+      // mark active in nav
+      $$('a.nav-item').forEach(a=>a.removeAttribute('aria-current'));
+      $('a.nav-item[href$="kalibrasi.html"]')?.setAttribute('aria-current','page');
+    }
+    initThemeObserver();
+    init();
+  </script>
+  <script src="js/sidebar.js  "></script>
+</body>
+</html>

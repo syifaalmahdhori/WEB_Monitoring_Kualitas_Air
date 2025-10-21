@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="id" data-bs-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Export — Fuzzy Sugeno</title>
+
+  <!-- Bootstrap & Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+  <!-- jsPDF (untuk PDF ringkas) -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Burger FAB (floating, mobile only) -->
+  <button id="btnBurger"
+          class="burger-fab d-lg-none"
+          type="button"
+          aria-label="Buka sidebar"
+          aria-controls="rail"
+          aria-expanded="false">
+    <i class="bi bi-list"></i>
+  </button>
+  <!-- ===== SIDEBAR ===== -->
+  <aside id="rail" class="rail" role="navigation" aria-label="Sidebar">
+    <a href="#" class="rail__brand">
+      <span class="rail__logo">AQ</span>
+      <span class="rail__title">Air Quality</span>
+    </a>
+
+    <div class="rail__actions">
+      <button id="btnExpand" class="btn rail__btn" type="button" aria-expanded="false">
+        <i class="bi bi-layout-sidebar"></i><span class="d-none d-lg-inline">Perlebar</span>
+      </button>
+      <button id="btnTheme" class="btn rail__btn" type="button" aria-pressed="false" aria-label="Ganti tema">
+        <i class="bi bi-moon-stars"></i><span class="d-none d-lg-inline">Tema</span>
+      </button>
+    </div>
+
+    <nav class="rail__nav" id="navPrimary">
+      <a class="nav-item" href="index.html">
+        <i class="bi bi-speedometer2"></i><span class="nav-item__label">Dashboard</span>
+      </a>
+      <a class="nav-item" href="inputs.html">
+        <i class="bi bi-sliders"></i><span class="nav-item__label">Input Sensor</span>
+      </a>
+      <a class="nav-item" href="kalibrasi.html">
+        <i class="bi bi-toggles2"></i><span class="nav-item__label">Kalibrasi MF</span>
+      </a>
+      <a class="nav-item" href="riwayat.html">
+        <i class="bi bi-clock-history"></i><span class="nav-item__label">Riwayat</span>
+      </a>
+      <a class="nav-item" href="tentang.html">
+        <i class="bi bi-info-circle"></i><span class="nav-item__label">Tentang</span>
+      </a>
+    </nav>
+
+    <div class="rail__section">
+      <nav class="rail__nav" id="navSecondary">
+        <a class="nav-item" href="export.html" aria-current="page">
+          <i class="bi bi-download"></i><span class="nav-item__label">Export</span>
+        </a>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main id="content" class="content-offset">
+    <div class="container py-4">
+
+      <!-- Hero / Header -->
+      <div class="position-relative hero mb-3">
+        <div class="hero__bg"></div>
+        <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
+          <div>
+            <h1 class="h4 fw-bold mb-1">Export Data</h1>
+            <p class="mb-0 muted">Filter → pratinjau → ekspor ke <b>CSV</b>, <b>JSON</b>, atau <b>PDF ringkas</b>.</p>
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            <div class="metric"><i class="bi bi-database text-primary"></i><span class="muted">Total</span><span id="totalRecords" class="value">0</span></div>
+            <div class="metric"><i class="bi bi-calendar3 text-success"></i><span class="muted">Rentang</span><span id="rangeInfo" class="value">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <!-- Toolbar -->
+        <div class="col-lg-4">
+          <div class="toolcard">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="mb-0">Filter</h5>
+              <div class="density d-flex gap-2">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="density" id="denseCozy" value="cozy" checked>
+                  <label class="form-check-label" for="denseCozy">Cozy</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="density" id="denseCompact" value="compact">
+                  <label class="form-check-label" for="denseCompact">Compact</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Rentang Waktu</label>
+              <select id="rangeSelect" class="form-select">
+                <option value="today">Hari ini</option>
+                <option value="7">7 hari terakhir</option>
+                <option value="30" selected>30 hari terakhir</option>
+                <option value="all">Semua waktu</option>
+                <option value="custom">Custom…</option>
+              </select>
+            </div>
+
+            <div class="mb-3 d-none" id="customDates">
+              <label class="form-label">Dari — Sampai</label>
+              <div class="d-flex gap-2">
+                <input type="date" id="dateFrom" class="form-control">
+                <input type="date" id="dateTo" class="form-control">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Kolom</label>
+              <select id="colsSelect" class="form-select" multiple size="6">
+                <option value="ts" selected>timestamp</option>
+                <option value="waktu" selected>waktu (lokal)</option>
+                <option value="pH" selected>pH</option>
+                <option value="ntu" selected>NTU</option>
+                <option value="t" selected>Suhu (°C)</option>
+                <option value="score" selected>Skor</option>
+                <option value="label" selected>Label</option>
+              </select>
+              <div class="form-text">Tahan Ctrl/⌘ untuk multi-pilih.</div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Batas Baris</label>
+              <input type="number" id="rowLimit" class="form-control" min="1" value="500">
+            </div>
+
+            <div class="tool-actions d-grid gap-2">
+              <button id="btnPreview" class="btn btn-outline-secondary"><i class="bi bi-eye me-1"></i>Pratinjau</button>
+              <div class="d-flex flex-wrap gap-2">
+                <button id="btnCSV" class="btn btn-primary flex-fill"><i class="bi bi-filetype-csv me-1"></i>CSV</button>
+                <button id="btnJSON" class="btn btn-success flex-fill"><i class="bi bi-braces me-1"></i>JSON</button>
+                <button id="btnPDF" class="btn btn-dark flex-fill"><i class="bi bi-filetype-pdf me-1"></i>PDF</button>
+              </div>
+              <small class="text-muted mt-1"><i class="bi bi-shield-check me-1"></i>Ekspor hanya data yang terlihat pada rentang & kolom terpilih.</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="col-lg-8">
+          <div class="card-table">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h5 class="mb-0">Pratinjau</h5>
+              <small id="previewCount" class="muted"></small>
+            </div>
+            <div class="table-responsive" id="previewWrap">
+              <table class="table table-hover table-sm align-middle mb-0" id="previewTable">
+                <thead><tr id="previewHead"></tr></thead>
+                <tbody id="previewBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toasts -->
+      <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="toastOk" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body"><i class="bi bi-check-circle me-1"></i>Ekspor berhasil disiapkan.</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- JS libs -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    /* ===== Helpers ===== */
+    const $  = (q, s=document) => s.querySelector(q);
+    const $$ = (q, s=document) => Array.from(s.querySelectorAll(q));
+    const root = document.documentElement;
+    const toastOk = new bootstrap.Toast($('#toastOk'));
+
+    // Sidebar + Theme
+    const rail = $('#rail'), content = $('#content'), btnExpand = $('#btnExpand'), btnTheme = $('#btnTheme');
+    const EXPAND_KEY='railExpanded', THEME_KEY='aqTheme';
+    const expanded = localStorage.getItem(EXPAND_KEY)==='true';
+    if (expanded){ rail.classList.add('rail--expanded'); content?.classList.add('content-offset--expanded'); btnExpand?.setAttribute('aria-expanded','true'); }
+    btnExpand?.addEventListener('click', ()=>{ const isExpanded=rail.classList.toggle('rail--expanded'); content?.classList.toggle('content-offset--expanded'); btnExpand.setAttribute('aria-expanded', String(isExpanded)); localStorage.setItem(EXPAND_KEY,String(isExpanded)); });
+
+    if (!localStorage.getItem(THEME_KEY) && window.matchMedia('(prefers-color-scheme: dark)').matches){ root.setAttribute('data-bs-theme','dark'); }
+    const savedTheme = localStorage.getItem(THEME_KEY); if (savedTheme) root.setAttribute('data-bs-theme', savedTheme);
+    btnTheme?.addEventListener('click', ()=>{ const next=root.getAttribute('data-bs-theme')==='dark'?'light':'dark'; root.setAttribute('data-bs-theme',next); localStorage.setItem(THEME_KEY,next); });
+
+    // mark active
+    $$('a.nav-item').forEach(a=>a.removeAttribute('aria-current'));
+    $('a.nav-item[href$="export.html"]')?.setAttribute('aria-current','page');
+
+    /* ===== Fuzzy (untuk skor saat dummy) ===== */
+    function trap(x,a,b,c,d){ if (x<=a||x>=d) return 0; if (x>=b && x<=c) return 1; if (x>a && x<b) return (x-a)/(b-a); if (x>c && x<d) return (d-x)/(d-c); return 0; }
+    function tri (x,a,b,c){ if (x<=a||x>=c) return 0; if (x===b) return 1; if (x>a && x<b) return (x-a)/(b-a); if (x>b && x<c) return (c-x)/(c-b); return 0; }
+    function mu_pH(pH){ return { asam: trap(pH,0,0,5.5,6.5), netral: tri(pH,6.5,7.0,8.5), basa: trap(pH,8.0,9.0,14,14) }; }
+    function mu_ntu(ntu){ return { jernih: trap(ntu,0,0,5,25), sedang: tri(ntu,20,100,300), keruh: trap(ntu,250,400,1000,1000) }; }
+    function mu_temp(t){ return { dingin: trap(t,0,0,18,24), nyaman: tri(t,22,27,32), panas: trap(t,30,33,40,40) }; }
+    function computeScore(pH, ntu, t){
+      const p = mu_pH(pH), n = mu_ntu(ntu), s = mu_temp(t);
+      const rules = [
+        {w: p.netral*n.jernih*s.nyaman, c:95},
+        {w: p.netral*n.jernih, c:85},
+        {w: p.netral*s.nyaman, c:80},
+        {w: n.jernih*s.nyaman, c:80},
+        {w: p.netral*n.sedang, c:60},
+        {w: p.netral*Math.min(1, s.dingin + s.panas), c:55},
+        {w: n.sedang*s.nyaman, c:55},
+        {w: p.basa*n.jernih, c:55},
+        {w: n.keruh, c:20},
+        {w: Math.max(p.asam, p.basa), c:25},
+        {w: s.panas*n.keruh, c:20},
+        {w: s.dingin*n.jernih, c:50},
+      ].map(r=>({w:Math.min(1,r.w), c:r.c}));
+      let num=0, den=0; for(const r of rules){ num+=r.w*r.c; den+=r.w; }
+      const score = den===0?0:num/den;
+      let label='Poor'; if (score>85) label='Excellent'; else if (score>65) label='Good'; else if (score>35) label='Fair';
+      return { score:+score.toFixed(2), label };
+    }
+
+    /* ===== Storage & Dummy ===== */
+    const STORE_KEY = 'aq_history';
+    function randHistoryPoint(ts){
+      const normal = Math.random() < 0.7;
+      const pH  = normal ? +(6.5 + Math.random()*1.5).toFixed(2) : +(Math.random()*14).toFixed(2);
+      const ntu = normal ? Math.round(Math.random()*200)        : Math.round(Math.random()*1000);
+      const t   = normal ? +(22 + Math.random()*8).toFixed(1)   : +(Math.random()*40).toFixed(1);
+      const {score, label} = computeScore(pH, ntu, t);
+      return { ts, pH, ntu, t, score, label };
+    }
+    function ensureHistory(){
+      let hist = JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
+      if (hist.length===0){
+        const now = Date.now(), day = 24*3600*1000;
+        for(let i=0;i<260;i++){
+          const ts = now - Math.floor(Math.random()*30*day) - Math.floor(Math.random()*day);
+          hist.push(randHistoryPoint(ts));
+        }
+        hist.sort((a,b)=>a.ts-b.ts);
+        localStorage.setItem(STORE_KEY, JSON.stringify(hist));
+      }
+      return hist;
+    }
+    let HISTORY = ensureHistory();
+    $('#totalRecords').textContent = HISTORY.length;
+
+    /* ===== Filter logic ===== */
+    function updateRangeInfo(rows){
+      if(rows.length===0){ $('#rangeInfo').textContent = '—'; return; }
+      const f = new Date(rows[0].ts).toLocaleDateString('id-ID');
+      const t = new Date(rows[rows.length-1].ts).toLocaleDateString('id-ID');
+      $('#rangeInfo').textContent = `${f} — ${t}`;
+    }
+    function filterByRange(hist){
+      const sel = $('#rangeSelect').value;
+      if (sel==='all'){ updateRangeInfo(hist); return hist.slice(); }
+      if (sel==='custom'){
+        const df = $('#dateFrom').value ? new Date($('#dateFrom').value) : null;
+        const dt = $('#dateTo').value ? new Date($('#dateTo').value) : null;
+        const out = hist.filter(r=>{
+          const d = new Date(r.ts);
+          return (!df || d >= new Date(df.getFullYear(), df.getMonth(), df.getDate())) &&
+                 (!dt || d <= new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), 23,59,59,999));
+        });
+        updateRangeInfo(out); return out;
+      }
+      if (sel==='today'){
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const out = hist.filter(r=> r.ts >= start);
+        updateRangeInfo(out); return out;
+      }
+      const days = Number(sel)||30;
+      const from = Date.now() - days*24*3600*1000;
+      const out = hist.filter(r=> r.ts >= from);
+      updateRangeInfo(out); return out;
+    }
+    function getSelectedCols(){ return Array.from($('#colsSelect').selectedOptions).map(o=>o.value); }
+
+    /* ===== Table render ===== */
+    function labelBadge(label){
+      const map = {
+        'Excellent':'success',
+        'Good':'primary',
+        'Fair':'warning',
+        'Poor':'danger'
+      };
+      const klass = map[label] || 'secondary';
+      return `<span class="badge badge-dot text-bg-${klass}">${label}</span>`;
+    }
+
+    function renderPreview(){
+      const head = $('#previewHead'), body = $('#previewBody');
+      head.innerHTML=''; body.innerHTML='';
+      const rows = filterByRange(HISTORY);
+      const limit = Math.max(1, parseInt($('#rowLimit').value||'500',10));
+      const cols = getSelectedCols();
+      // Header
+      cols.forEach(c=>{ const th=document.createElement('th'); th.textContent=c; head.appendChild(th); });
+      // Body (latest first)
+      const show = rows.slice().sort((a,b)=>b.ts-a.ts).slice(0, limit);
+      for(const r of show){
+        const tr = document.createElement('tr');
+        cols.forEach(c=>{
+          const td = document.createElement('td');
+          if (c==='waktu'){ td.textContent = new Date(r.ts).toLocaleString('id-ID'); }
+          else if (c==='label'){ td.innerHTML = labelBadge(r.label); }
+          else { td.textContent = r[c]; }
+          tr.appendChild(td);
+        });
+        body.appendChild(tr);
+      }
+      $('#previewCount').textContent = `${show.length} baris ditampilkan`;
+    }
+
+    /* ===== Exporters ===== */
+    function rowsForExport(){
+      const rows = filterByRange(HISTORY).sort((a,b)=>a.ts-b.ts);
+      const limit = Math.max(1, parseInt($('#rowLimit').value||'500',10));
+      const cols = getSelectedCols();
+      return { rows: rows.slice(0, limit), cols };
+    }
+    function doneToast(){ toastOk.show(); }
+
+    function exportCSV(){
+      const {rows, cols} = rowsForExport();
+      const header = cols.join(',');
+      const lines = rows.map(r => cols.map(c=>{
+        if(c==='waktu') return `"${new Date(r.ts).toLocaleString('id-ID')}"`;
+        return r[c];
+      }).join(','));
+      const csv = [header, ...lines].join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `export_${Date.now()}.csv` });
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+      doneToast();
+    }
+
+    function exportJSON(){
+      const {rows, cols} = rowsForExport();
+      const mapped = rows.map(r=>{
+        const o = {};
+        cols.forEach(c=> o[c] = (c==='waktu') ? new Date(r.ts).toLocaleString('id-ID') : r[c]);
+        return o;
+      });
+      const blob = new Blob([JSON.stringify(mapped,null,2)], {type:'application/json'});
+      const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `export_${Date.now()}.json` });
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+      doneToast();
+    }
+
+    function exportPDF(){
+      const {rows, cols} = rowsForExport();
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit:'pt', format:'a4' });
+      const title = 'Export Riwayat Kualitas Air';
+      doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.text(title, 40, 40);
+      doc.setFontSize(10); doc.setFont('helvetica','normal');
+      // statistik ringkas
+      const n = rows.length;
+      const avg = (arr)=> (arr.reduce((a,b)=>a+b,0)/Math.max(1,arr.length));
+      const apH  = avg(rows.map(r=>r.pH));
+      const aNTU = avg(rows.map(r=>r.ntu));
+      const aT   = avg(rows.map(r=>r.t));
+      const aSc  = avg(rows.map(r=>r.score));
+      doc.text(`Baris: ${n}`, 40, 60);
+      doc.text(`Rata-rata: pH ${isFinite(apH)?apH.toFixed(2):'-'} | NTU ${isFinite(aNTU)?aNTU.toFixed(1):'-'} | Suhu ${isFinite(aT)?aT.toFixed(1):'-'}°C | Skor ${isFinite(aSc)?aSc.toFixed(1):'-'}`, 40, 76);
+      // tabel
+      const head = [cols.map(c=>c.toUpperCase())];
+      const data = rows.slice(0, 100).map(r => cols.map(c => c==='waktu' ? new Date(r.ts).toLocaleString('id-ID') : r[c]));
+      doc.autoTable({
+        head, body:data, startY: 95,
+        styles:{ fontSize:8, cellPadding:3, halign:'left' },
+        headStyles:{ fillColor:[13,110,253], textColor:255 },
+        alternateRowStyles:{ fillColor:[245,247,251] }
+      });
+      doc.save(`export_${Date.now()}.pdf`);
+      doneToast();
+    }
+
+    /* ===== Events ===== */
+    $('#rangeSelect').addEventListener('change', e=>{
+      const custom = e.target.value==='custom';
+      $('#customDates').classList.toggle('d-none', !custom);
+      renderPreview();
+    });
+    $('#dateFrom').addEventListener('change', renderPreview);
+    $('#dateTo').addEventListener('change', renderPreview);
+    $('#colsSelect').addEventListener('change', renderPreview);
+    $('#rowLimit').addEventListener('input', renderPreview);
+    $('#btnPreview').addEventListener('click', renderPreview);
+    $('#btnCSV').addEventListener('click', exportCSV);
+    $('#btnJSON').addEventListener('click', exportJSON);
+    $('#btnPDF').addEventListener('click', exportPDF);
+
+    // density
+    $$('input[name="density"]').forEach(r=>{
+      r.addEventListener('change', ()=>{
+        const compact = $('#denseCompact').checked;
+        $('#previewTable').classList.toggle('table-sm', compact);
+      });
+    });
+
+    // init
+    renderPreview();
+  </script>
+  <script src="js/sidebar.js  "></script>
+</body>
+</html>

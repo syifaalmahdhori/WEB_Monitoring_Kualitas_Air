@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="id" data-bs-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard Monitoring — Fuzzy Sugeno</title>
+
+  <!-- Bootstrap & Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+  <!-- Burger FAB (floating, mobile only) -->
+  <button id="btnBurger"
+          class="burger-fab d-lg-none"
+          type="button"
+          aria-label="Buka sidebar"
+          aria-controls="rail"
+          aria-expanded="false">
+    <i class="bi bi-list"></i>
+  </button>
+  
+  <!-- ===== SIDEBAR ===== -->
+  <aside id="rail" class="rail" role="navigation" aria-label="Sidebar">
+    <a href="#" class="rail__brand">
+      <span class="rail__logo">AQ</span>
+      <span class="rail__title">Air Quality</span>
+    </a>
+
+    <div class="rail__actions">
+      <button id="btnExpand" class="btn rail__btn" type="button" aria-expanded="false">
+        <i class="bi bi-layout-sidebar"></i>
+        <span class="d-none d-lg-inline">Perlebar</span>
+      </button>
+      <button id="btnTheme" class="btn rail__btn" type="button" aria-pressed="false" aria-label="Ganti tema">
+        <i class="bi bi-moon-stars"></i>
+        <span class="d-none d-lg-inline">Tema</span>
+      </button>
+    </div>
+
+    <nav class="rail__nav" id="navPrimary">
+      <a class="nav-item" href="index.html" aria-current="page">
+        <i class="nav-item__icon bi bi-speedometer2"></i><span class="nav-item__label">Dashboard</span>
+      </a>
+      <a class="nav-item" href="inputs.html">
+        <i class="nav-item__icon bi bi-sliders"></i><span class="nav-item__label">Input Sensor</span>
+      </a>
+      <a class="nav-item" href="kalibrasi.html">
+        <i class="nav-item__icon bi bi-toggles2"></i><span class="nav-item__label">Kalibrasi MF</span>
+      </a>
+      <a class="nav-item" href="riwayat.html">
+        <i class="nav-item__icon bi bi-clock-history"></i><span class="nav-item__label">Riwayat</span>
+      </a>
+      <a class="nav-item" href="tentang.html">
+        <i class="nav-item__icon bi bi-info-circle"></i><span class="nav-item__label">Tentang</span>
+      </a>
+    </nav>
+
+    <div class="rail__section">
+      <nav class="rail__nav" id="navSecondary">
+        <a class="nav-item" href="export.html">
+          <i class="nav-item__icon bi bi-download"></i><span class="nav-item__label">Export</span>
+        </a>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- ================== KONTEN UTAMA (offset) ================== -->
+  <main id="content" class="content-offset">
+    <div class="container py-5">
+      <div class="row g-4">
+        <div class="col-12">
+          <h1 class="fw-bold">Monitoring Kualitas Air <span class="muted">• Fuzzy Sugeno</span></h1>
+          <p class="text-secondary mb-0">Sensor: pH, Kekeruhan (NTU), Suhu (°C). Output: skor 0–100 + label.</p>
+        </div>
+
+        <!-- ====== (HALAMAN INI = Input) Panel kiri & kanan tetap seperti punyamu ====== -->
+        <!-- Input Panel -->
+        <div class="col-lg-5">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title mb-3">Input Sensor</h5>
+              <form id="formInputs" class="needs-validation" novalidate>
+                <!-- pH -->
+                <div class="sensor-card mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="fw-semibold">pH</span>
+                      <span class="badge text-bg-light border unit-chip" data-bs-toggle="tooltip" title="Derajat keasaman. Ideal netral di sekitar 7.">0–14</span>
+                    </div>
+                    <div class="input-group input-group-sm" style="max-width: 180px;">
+                      <span class="input-group-text">pH</span>
+                      <input type="number" class="form-control" id="ph" step="0.01" min="0" max="14" placeholder="7.20" required>
+                    </div>
+                  </div>
+                  <input type="range" class="form-range" id="ph_range" min="0" max="14" step="0.01">
+                  <div class="progress mb-1">
+                    <div id="meter_ph" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                  </div>
+                  <div class="d-flex justify-content-between input-help">
+                    <span>Asam</span><span>Netral</span><span>Basa</span>
+                  </div>
+                </div>
+
+                <!-- NTU -->
+                <div class="sensor-card mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="fw-semibold">Kekeruhan</span>
+                      <span class="badge text-bg-light border unit-chip" data-bs-toggle="tooltip" title="Satuan NTU (Nephelometric Turbidity Unit)">NTU</span>
+                    </div>
+                    <div class="input-group input-group-sm" style="max-width: 200px;">
+                      <span class="input-group-text">0–1000</span>
+                      <input type="number" class="form-control" id="ntu" step="1" min="0" max="1000" placeholder="30" required>
+                    </div>
+                  </div>
+                  <input type="range" class="form-range" id="ntu_range" min="0" max="1000" step="1">
+                  <div class="progress mb-1">
+                    <div id="meter_ntu" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                  </div>
+                  <div class="d-flex justify-content-between input-help">
+                    <span>Jernih</span><span>Sedang</span><span>Keruh</span>
+                  </div>
+                </div>
+
+                <!-- Temp -->
+                <div class="sensor-card mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="fw-semibold">Suhu</span>
+                      <span class="badge text-bg-light border unit-chip">°C</span>
+                    </div>
+                    <div class="input-group input-group-sm" style="max-width: 180px;">
+                      <span class="input-group-text">0–40</span>
+                      <input type="number" class="form-control" id="temp" step="0.1" min="0" max="40" placeholder="28.0" required>
+                    </div>
+                  </div>
+                  <input type="range" class="form-range" id="temp_range" min="0" max="40" step="0.1">
+                  <div class="progress mb-1">
+                    <div id="meter_temp" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                  </div>
+                  <div class="d-flex justify-content-between input-help">
+                    <span>Dingin</span><span>Nyaman</span><span>Panas</span>
+                  </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                  <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Preset</button>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="#" data-preset='{"ph":7.2,"ntu":5,"temp":27}'>Air PDAM Jernih</a></li>
+                      <li><a class="dropdown-item" href="#" data-preset='{"ph":6.8,"ntu":120,"temp":29}'>Sumur Sedang</a></li>
+                      <li><a class="dropdown-item" href="#" data-preset='{"ph":7.5,"ntu":450,"temp":31}'>Sungai Keruh</a></li>
+                    </ul>
+                  </div>
+                  <button class="btn btn-primary" type="submit">Hitung Skor</button>
+                  <button class="btn btn-outline-secondary" type="button" id="btnDemo">Demo Sample</button>
+                  <button class="btn btn-outline-danger" type="reset" id="btnReset">Reset</button>
+                </div>
+
+                <div class="form-text">Parameter MF dapat dikalibrasi di bagian skrip. Gunakan slider untuk input cepat atau ketik angka untuk presisi.</div>
+              </form>
+            </div>
+          </div>
+
+          <div class="footnote mt-3">
+            <span class="fw-semibold">Catatan:</span> Parameter MF dapat dikalibrasi sesuai standar laboratorium/WHO/Permenkes. Ubah di bagian <em>Konfigurasi Fuzzy</em> pada skrip.
+          </div>
+        </div>
+
+        <!-- Result Panel -->
+        <div class="col-lg-7">
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title mb-3">Hasil</h5>
+              <div class="row g-3 align-items-center">
+                <div class="col-md-5">
+                  <div class="p-3 border rounded-4 bg-light">
+                    <div class="text-secondary mini">Water Quality Score</div>
+                    <div class="display-5 fw-bold" id="outScore">—</div>
+                    <div class="mt-2">
+                      <span id="outLabel" class="badge badge-pill text-bg-secondary px-3 py-2 label-chip">—</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-7">
+                  <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>pH</span>
+                      <span id="outPH" class="text-muted">—</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>NTU</span>
+                      <span id="outNTU" class="text-muted">—</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>Suhu (°C)</span>
+                      <span id="outTEMP" class="text-muted">—</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <h6 class="card-title mb-3">Derajat Keanggotaan (μ)</h6>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <table class="table table-bordered table-sm">
+                    <thead><tr><th colspan="2">pH</th></tr></thead>
+                    <tbody>
+                      <tr><td>Asam</td><td id="mu_ph_asam">0.00</td></tr>
+                      <tr><td>Netral</td><td id="mu_ph_netral">0.00</td></tr>
+                      <tr><td>Basa</td><td id="mu_ph_basa">0.00</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="col-md-4">
+                  <table class="table table-bordered table-sm">
+                    <thead><tr><th colspan="2">Kekeruhan</th></tr></thead>
+                    <tbody>
+                      <tr><td>Jernih</td><td id="mu_ntu_jernih">0.00</td></tr>
+                      <tr><td>Sedang</td><td id="mu_ntu_sedang">0.00</td></tr>
+                      <tr><td>Keruh</td><td id="mu_ntu_keruh">0.00</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="col-md-4">
+                  <table class="table table-bordered table-sm">
+                    <thead><tr><th colspan="2">Suhu</th></tr></thead>
+                    <tbody>
+                      <tr><td>Dingin</td><td id="mu_t_dingin">0.00</td></tr>
+                      <tr><td>Nyaman</td><td id="mu_t_nyaman">0.00</td></tr>
+                      <tr><td>Panas</td><td id="mu_t_panas">0.00</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <details class="mt-3">
+                <summary class="fw-semibold">Detail Rules & Bobot (wᵢ)</summary>
+                <div class="table-responsive mt-2">
+                  <table class="table table-striped table-sm align-middle" id="rulesTable">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Aturan</th>
+                        <th>wᵢ</th>
+                        <th>Konsekuen (cᵢ)</th>
+                        <th>wᵢ·cᵢ</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                      <tr class="table-light">
+                        <th colspan="2" class="text-end">Σ wᵢ</th>
+                        <th id="sumW">0.00</th>
+                        <th class="text-end">Σ wᵢ·cᵢ</th>
+                        <th id="sumWC">0.00</th>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ================== SCRIPT: Fuzzy + Sidebar ================== -->
+  <script>
+    // ====== Sidebar logic ======
+    const $qs = (q, s=document) => s.querySelector(q);
+    const $$qa = (q, s=document) => Array.from(s.querySelectorAll(q));
+    const root = document.documentElement;
+    const rail = $qs('#rail');
+    const content = $qs('#content');
+    const btnExpand = $qs('#btnExpand');
+    const btnTheme  = $qs('#btnTheme');
+
+    // Persist expand
+    const EXPAND_KEY = 'railExpanded';
+    const expanded = localStorage.getItem(EXPAND_KEY) === 'true';
+    if (expanded){ rail.classList.add('rail--expanded'); content?.classList.add('content-offset--expanded'); btnExpand?.setAttribute('aria-expanded','true'); }
+    btnExpand?.addEventListener('click', () => {
+      const isExpanded = rail.classList.toggle('rail--expanded');
+      content?.classList.toggle('content-offset--expanded');
+      btnExpand.setAttribute('aria-expanded', String(isExpanded));
+      localStorage.setItem(EXPAND_KEY, String(isExpanded));
+    });
+
+    // Theme toggle (optional)
+    const THEME_KEY = 'aqTheme';
+    const savedTheme = localStorage.getItem(THEME_KEY);
+    if (savedTheme) root.setAttribute('data-bs-theme', savedTheme);
+    btnTheme?.addEventListener('click', () => {
+      const next = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-bs-theme', next);
+      localStorage.setItem(THEME_KEY, next);
+    });
+
+    // ====== Mark active by pathname (bukan hash) ======
+    function markActiveByPath(){
+      // nama file saat ini (contoh: '', 'index.html', 'hasil.html')
+      let current = location.pathname.split('/').pop();
+      if (!current) current = 'index.html';
+
+      // normalisasi alias beranda
+      const HOME_ALIASES = new Set(['', 'index.html', 'inputs.html']);
+      $$qa('.nav-item').forEach(a => {
+        a.removeAttribute('aria-current');
+        const href = a.getAttribute('href') || '';
+        const file = href.split('/').pop();
+        const isHome = HOME_ALIASES.has(current) && HOME_ALIASES.has(file);
+        if (isHome || file === current){
+          a.setAttribute('aria-current','page');
+        }
+      });
+    }
+    markActiveByPath();
+
+    // ====== Fuzzy logic (punyamu) ======
+    function trap(x,a,b,c,d){
+      if (x <= a || x >= d) return 0;
+      if (x >= b && x <= c) return 1;
+      if (x > a && x < b) return (x - a) / (b - a);
+      if (x > c && x < d) return (d - x) / (d - c);
+      return 0;
+    }
+    function tri(x,a,b,c){
+      if (x <= a || x >= c) return 0;
+      if (x === b) return 1;
+      if (x > a && x < b) return (x - a) / (b - a);
+      if (x > b && x < c) return (c - x) / (c - b);
+      return 0;
+    }
+
+    function mu_pH(pH){
+      return { asam: trap(pH,0,0,5.5,6.5), netral: tri(pH,6.5,7.0,8.5), basa: trap(pH,8.0,9.0,14,14) };
+    }
+    function mu_ntu(ntu){
+      return { jernih: trap(ntu,0,0,5,25), sedang: tri(ntu,20,100,300), keruh: trap(ntu,250,400,1000,1000) };
+    }
+    function mu_temp(t){
+      return { dingin: trap(t,0,0,18,24), nyaman: tri(t,22,27,32), panas: trap(t,30,33,40,40) };
+    }
+
+    const CONSEQUENTS = { EXCELLENT:95, GOOD:80, GOOD2:85, FAIR:60, FAIR2:55, FAIR3:50, POOR:20, POOR2:25 };
+
+    function computeWaterQuality(pH, ntu, t){
+      const p = mu_pH(pH), n = mu_ntu(ntu), s = mu_temp(t);
+      const rulesRaw = [
+        {name:'R1', desc:'pH Netral ∧ NTU Jernih ∧ Suhu Nyaman', w: p.netral * n.jernih * s.nyaman, c: CONSEQUENTS.EXCELLENT},
+        {name:'R2', desc:'pH Netral ∧ NTU Jernih',               w: p.netral * n.jernih,              c: 85},
+        {name:'R3', desc:'pH Netral ∧ Suhu Nyaman',              w: p.netral * s.nyaman,               c: 80},
+        {name:'R4', desc:'NTU Jernih ∧ Suhu Nyaman',             w: n.jernih * s.nyaman,               c: 80},
+        {name:'R5', desc:'pH Netral ∧ NTU Sedang',               w: p.netral * n.sedang,                c: 60},
+        {name:'R6', desc:'pH Netral ∧ (Suhu Dingin ∨ Panas)',    w: p.netral * Math.min(1, (s.dingin + s.panas)), c: 55},
+        {name:'R7', desc:'NTU Sedang ∧ Suhu Nyaman',             w: n.sedang * s.nyaman,                c: 55},
+        {name:'R8', desc:'pH Basa ∧ NTU Jernih',                 w: p.basa * n.jernih,                   c: 55},
+        {name:'R9', desc:'NTU Keruh',                            w: n.keruh,                              c: 20},
+        {name:'R10',desc:'pH Asam ∨ Basa kuat',                  w: Math.max(p.asam, p.basa),            c: 25},
+        {name:'R11',desc:'Suhu Panas ∧ NTU Keruh',               w: s.panas * n.keruh,                    c: 20},
+        {name:'R12',desc:'Suhu Dingin ∧ NTU Jernih',             w: s.dingin * n.jernih,                  c: 50},
+      ];
+      const rules = rulesRaw.map(r => ({...r, w: Math.min(1, r.w)}));
+      let num = 0, den = 0;
+      for (const r of rules){ num += r.w * r.c; den += r.w; }
+      const score = den === 0 ? 0 : (num / den);
+
+      let label = 'Poor', badge = 'text-bg-danger';
+      if (score > 85) { label = 'Excellent'; badge = 'text-bg-success'; }
+      else if (score > 65) { label = 'Good'; badge = 'text-bg-primary'; }
+      else if (score > 35) { label = 'Fair'; badge = 'text-bg-warning'; }
+
+      return { score: Number(score.toFixed(2)), label, badge, memberships: {p, n, s}, rules, sumW: den, sumWC: num };
+    }
+
+    // ====== UI Binding (punyamu) ======
+    const $ = (sel) => document.querySelector(sel);
+
+    function bindDualInput(numId, rangeId, min, max){
+      const num = document.getElementById(numId);
+      const rng = document.getElementById(rangeId);
+      const meter = document.getElementById(`meter_${numId}`);
+      const updateFromNum = () => {
+        const v = parseFloat(num.value);
+        if (!isNaN(v)) rng.value = v;
+        const pct = Math.max(0, Math.min(100, ((rng.value - min) / (max - min)) * 100));
+        if (meter) meter.style.width = pct + '%';
+      };
+      const updateFromRange = () => {
+        num.value = rng.value;
+        const pct = Math.max(0, Math.min(100, ((rng.value - min) / (max - min)) * 100));
+        if (meter) meter.style.width = pct + '%';
+      };
+      num.addEventListener('input', () => { updateFromNum(); autoComputeIfValid(); });
+      rng.addEventListener('input', () => { updateFromRange(); autoComputeIfValid(); });
+      updateFromNum();
+    }
+
+    function autoComputeIfValid(){
+      const form = $('#formInputs');
+      if (form.checkValidity()) handleCompute();
+    }
+
+    function render(result, inputs){
+      $('#outScore').textContent = result.score.toFixed(2);
+      const outLabel = $('#outLabel');
+      outLabel.textContent = result.label;
+      outLabel.className = `badge badge-pill px-3 py-2 label-chip ${result.badge}`;
+
+      $('#outPH').textContent = inputs.ph;
+      $('#outNTU').textContent = inputs.ntu;
+      $('#outTEMP').textContent = inputs.temp;
+
+      $('#mu_ph_asam').textContent   = result.memberships.p.asam.toFixed(2);
+      $('#mu_ph_netral').textContent = result.memberships.p.netral.toFixed(2);
+      $('#mu_ph_basa').textContent   = result.memberships.p.basa.toFixed(2);
+
+      $('#mu_ntu_jernih').textContent = result.memberships.n.jernih.toFixed(2);
+      $('#mu_ntu_sedang').textContent = result.memberships.n.sedang.toFixed(2);
+      $('#mu_ntu_keruh').textContent  = result.memberships.n.keruh.toFixed(2);
+
+      $('#mu_t_dingin').textContent = result.memberships.s.dingin.toFixed(2);
+      $('#mu_t_nyaman').textContent = result.memberships.s.nyaman.toFixed(2);
+      $('#mu_t_panas').textContent  = result.memberships.s.panas.toFixed(2);
+
+      const tbody = document.querySelector('#rulesTable tbody');
+      tbody.innerHTML = '';
+      result.rules.forEach((r, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${i+1}</td>
+          <td class="small">${r.desc}</td>
+          <td>${r.w.toFixed(3)}</td>
+          <td>${r.c}</td>
+          <td>${(r.w * r.c).toFixed(3)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      $('#sumW').textContent = result.sumW.toFixed(3);
+      $('#sumWC').textContent = result.sumWC.toFixed(3);
+    }
+
+    function handleCompute(e){
+      if (e) e.preventDefault();
+      const form = $('#formInputs');
+      if (!form.checkValidity()){
+        form.classList.add('was-validated');
+        return;
+      }
+      const ph = parseFloat($('#ph').value);
+      const ntu = parseFloat($('#ntu').value);
+      const temp = parseFloat($('#temp').value);
+      const res = computeWaterQuality(ph, ntu, temp);
+      render(res, {ph, ntu, temp});
+    }
+
+    // Init inputs & tooltips
+    bindDualInput('ph', 'ph_range', 0, 14);
+    bindDualInput('ntu', 'ntu_range', 0, 1000);
+    bindDualInput('temp', 'temp_range', 0, 40);
+
+    function initTooltips(){
+      if (window.bootstrap && bootstrap.Tooltip){
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+      } else {
+        setTimeout(initTooltips, 100);
+      }
+    }
+    window.addEventListener('load', initTooltips);
+
+    document.querySelectorAll('.dropdown-item[data-preset]').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        const preset = JSON.parse(item.getAttribute('data-preset'));
+        $('#ph').value = preset.ph; $('#ph_range').value = preset.ph;
+        $('#ntu').value = preset.ntu; $('#ntu_range').value = preset.ntu;
+        $('#temp').value = preset.temp; $('#temp_range').value = preset.temp;
+        ['ph','ntu','temp'].forEach(id => document.getElementById(id).dispatchEvent(new Event('input')));
+        handleCompute();
+      });
+    });
+
+    function fillDemo(){
+      $('#ph').value = 7.2; $('#ph_range').value = 7.2;
+      $('#ntu').value = 30; $('#ntu_range').value = 30;
+      $('#temp').value = 28; $('#temp_range').value = 28;
+      ['ph','ntu','temp'].forEach(id => document.getElementById(id).dispatchEvent(new Event('input')));
+      handleCompute();
+    }
+
+    function handleReset(){
+      $('#outScore').textContent = '—';
+      $('#outLabel').textContent = '—';
+      $('#outLabel').className = 'badge badge-pill text-bg-secondary px-3 py-2 label-chip';
+      ['mu_ph_asam','mu_ph_netral','mu_ph_basa','mu_ntu_jernih','mu_ntu_sedang','mu_ntu_keruh','mu_t_dingin','mu_t_nyaman','mu_t_panas'].forEach(id=>{
+        document.getElementById(id).textContent = '0.00';
+      });
+      document.querySelector('#rulesTable tbody').innerHTML = '';
+      $('#sumW').textContent = '0.00';
+      $('#sumWC').textContent = '0.00';
+      $('#outPH').textContent = '—';
+      $('#outNTU').textContent = '—';
+      $('#outTEMP').textContent = '—';
+    }
+
+    document.getElementById('formInputs').addEventListener('submit', handleCompute);
+    document.getElementById('btnDemo').addEventListener('click', fillDemo);
+    document.getElementById('btnReset').addEventListener('click', handleReset);
+
+    ['ph','ntu','temp'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => {
+        const form = $('#formInputs');
+        if (form.checkValidity()) handleCompute();
+      });
+    });
+  </script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/sidebar.js  "></script>
+</body>
+</html>

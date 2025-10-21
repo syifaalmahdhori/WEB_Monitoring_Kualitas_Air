@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="id" data-bs-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard Monitoring — Fuzzy Sugeno</title>
+
+  <!-- Bootstrap & Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+
+  
+<!-- Burger FAB (floating, mobile only) -->
+   <div id="railOverlay" class="rail-overlay"></div>
+  <button id="btnBurger" class="burger-fab d-lg-none" type="button">
+    <i class="bi bi-pause-fill"></i>
+
+  </button>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside id="rail" class="rail" role="navigation" aria-label="Sidebar">
+    <a href="#" class="rail__brand">
+      <span class="rail__logo">AQ</span>
+      <span class="rail__title">Air Quality</span>
+    </a>
+
+    <div class="rail__actions">
+      <button id="btnExpand" class="btn rail__btn" type="button" aria-expanded="false">
+        <i class="bi bi-layout-sidebar"></i>
+        <span class="d-none d-lg-inline">Perlebar</span>
+      </button>
+      <button id="btnTheme" class="btn rail__btn" type="button" aria-pressed="false" aria-label="Ganti tema">
+        <i class="bi bi-moon-stars"></i>
+        <span class="d-none d-lg-inline">Tema</span>
+      </button>
+    </div>
+
+    <nav class="rail__nav" id="navPrimary">
+      <a class="nav-item" href="index.html" aria-current="page">
+        <i class="nav-item__icon bi bi-speedometer2"></i><span class="nav-item__label">Dashboard</span>
+      </a>
+      <a class="nav-item" href="inputs.html">
+        <i class="nav-item__icon bi bi-sliders"></i><span class="nav-item__label">Input Sensor</span>
+      </a>
+      <a class="nav-item" href="kalibrasi.html">
+        <i class="nav-item__icon bi bi-toggles2"></i><span class="nav-item__label">Kalibrasi MF</span>
+      </a>
+      <a class="nav-item" href="riwayat.html">
+        <i class="nav-item__icon bi bi-clock-history"></i><span class="nav-item__label">Riwayat</span>
+      </a>
+      <a class="nav-item" href="tentang.html">
+        <i class="nav-item__icon bi bi-info-circle"></i><span class="nav-item__label">Tentang</span>
+      </a>
+    </nav>
+
+    <div class="rail__section">
+      <nav class="rail__nav" id="navSecondary">
+        <a class="nav-item" href="export.html">
+          <i class="nav-item__icon bi bi-download"></i><span class="nav-item__label">Export</span>
+        </a>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main id="content" class="content-offset">
+    <div class="container py-4">
+      <!-- Header / toolbar -->
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+        <div class="d-flex align-items-center gap-3">
+          <h1 class="h3 fw-bold mb-0 page-title">Dashboard Monitoring</h1>
+          <span id="runIndicator" class="run-indicator">
+            <span class="dot red"></span> <span id="runText">Stopped</span>
+          </span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <div class="dropdown">
+            <button class="btn btn-soft btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-hourglass me-1"></i> Interval: <span id="intervalLabel">3s</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" id="intervalMenu">
+              <li><a class="dropdown-item" data-ival="1000" href="#">1s</a></li>
+              <li><a class="dropdown-item" data-ival="2000" href="#">2s</a></li>
+              <li><a class="dropdown-item active" data-ival="3000" href="#">3s</a></li>
+              <li><a class="dropdown-item" data-ival="5000" href="#">5s</a></li>
+              <li><a class="dropdown-item" data-ival="10000" href="#">10s</a></li>
+            </ul>
+          </div>
+
+          <button id="btnDummy" class="btn btn-soft-secondary btn-sm">
+            <i class="bi bi-flask me-1"></i>Dummy
+          </button>
+          <button id="btnStart" class="btn btn-soft-primary btn-sm">
+            <i class="bi bi-play-fill me-1"></i>Start
+          </button>
+          <button id="btnStop" class="btn btn-soft-danger btn-sm" disabled>
+            <i class="bi bi-stop-fill me-1"></i>Stop
+          </button>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="row g-3">
+        <div class="col-md-3">
+          <div class="summary-card">
+            <div class="summary-icon" style="background:#845ef7"><i class="bi bi-bezier2"></i></div>
+            <div>
+              <div class="summary-value" id="sumPH">—</div>
+              <div class="summary-label">pH</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="summary-card">
+            <div class="summary-icon" style="background:#12b886"><i class="bi bi-droplet-half"></i></div>
+            <div>
+              <div class="summary-value" id="sumNTU">—</div>
+              <div class="summary-label">Kekeruhan (NTU)</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="summary-card">
+            <div class="summary-icon" style="background:#fd7e14"><i class="bi bi-thermometer-half"></i></div>
+            <div>
+              <div class="summary-value" id="sumTEMP">—</div>
+              <div class="summary-label">Suhu</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="summary-card">
+            <div class="summary-icon" style="background:#339af0"><i class="bi bi-bar-chart-line"></i></div>
+            <div>
+              <div class="summary-value" id="sumSCORE">—</div>
+              <div class="summary-label">Skor</div>
+              <div class="mt-1"><span class="badge-status" id="sumSTATUS">—</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Score block -->
+      <div class="surface-lite p-3 mt-3">
+        <div class="text-secondary mini">Water Quality Score</div>
+        <div class="display-6 fw-bold" id="bigScore">—</div>
+        <div class="mt-2">
+          <span id="bigLabel" class="badge text-bg-secondary px-3 py-2">—</span>
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div class="card chart-card mt-3">
+        <div class="d-flex align-items-center justify-content-between px-2">
+          <h6 class="mb-0">Tren Sensor (Dummy)</h6>
+          <small class="text-muted" id="lastUpdate">—</small>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="lineChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bootstrap & Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+  <script>
+    const $ = (q, s=document) => s.querySelector(q);
+    const $$ = (q, s=document) => Array.from(s.querySelectorAll(q));
+    const root = document.documentElement;
+
+    /* ===== Sidebar ===== */
+    const rail = $('#rail'), content = $('#content'), btnExpand = $('#btnExpand'), btnTheme = $('#btnTheme');
+    const EXPAND_KEY = 'railExpanded';
+    const expanded = localStorage.getItem(EXPAND_KEY) === 'true';
+    if (expanded){ rail.classList.add('rail--expanded'); content?.classList.add('content-offset--expanded'); btnExpand?.setAttribute('aria-expanded','true'); }
+    btnExpand?.addEventListener('click', () => {
+      const isExpanded = rail.classList.toggle('rail--expanded');
+      content?.classList.toggle('content-offset--expanded');
+      btnExpand.setAttribute('aria-expanded', String(isExpanded));
+      localStorage.setItem(EXPAND_KEY, String(isExpanded));
+    });
+
+    const THEME_KEY = 'aqTheme';
+    if (!localStorage.getItem(THEME_KEY) && window.matchMedia('(prefers-color-scheme: dark)').matches){
+      root.setAttribute('data-bs-theme','dark');
+    }
+    const savedTheme = localStorage.getItem(THEME_KEY);
+    if (savedTheme) root.setAttribute('data-bs-theme', savedTheme);
+    btnTheme?.addEventListener('click', () => {
+      const next = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-bs-theme', next);
+      localStorage.setItem(THEME_KEY, next);
+      refreshChartTheme();
+    });
+
+    $$('a.nav-item').forEach(a => a.removeAttribute('aria-current'));
+    $('a.nav-item[href$="index.html"]')?.setAttribute('aria-current','page');
+
+    /* ===== Fuzzy mini ===== */
+    function trap(x,a,b,c,d){ if (x <= a || x >= d) return 0; if (x >= b && x <= c) return 1; if (x > a && x < b) return (x - a)/(b - a); if (x > c && x < d) return (d - x)/(d - c); return 0; }
+    function tri(x,a,b,c){ if (x <= a || x >= c) return 0; if (x === b) return 1; if (x > a && x < b) return (x - a)/(b - a); if (x > b && x < c) return (c - x)/(c - b); return 0; }
+    function mu_pH(pH){ return { asam: trap(pH,0,0,5.5,6.5), netral: tri(pH,6.5,7.0,8.5), basa: trap(pH,8.0,9.0,14,14) }; }
+    function mu_ntu(ntu){ return { jernih: trap(ntu,0,0,5,25), sedang: tri(ntu,20,100,300), keruh: trap(ntu,250,400,1000,1000) }; }
+    function mu_temp(t){ return { dingin: trap(t,0,0,18,24), nyaman: tri(t,22,27,32), panas: trap(t,30,33,40,40) }; }
+    function computeWaterQuality(pH, ntu, t){
+      const p = mu_pH(pH), n = mu_ntu(ntu), s = mu_temp(t);
+      const rules = [
+        { w: p.netral*n.jernih*s.nyaman, c: 95 },
+        { w: p.netral*n.jernih,          c: 85 },
+        { w: p.netral*s.nyaman,          c: 80 },
+        { w: n.jernih*s.nyaman,          c: 80 },
+        { w: p.netral*n.sedang,          c: 60 },
+        { w: p.netral*Math.min(1,(s.dingin+s.panas)), c: 55 },
+        { w: n.sedang*s.nyaman,          c: 55 },
+        { w: p.basa*n.jernih,            c: 55 },
+        { w: n.keruh,                     c: 20 },
+        { w: Math.max(p.asam,p.basa),     c: 25 },
+        { w: s.panas*n.keruh,             c: 20 },
+        { w: s.dingin*n.jernih,           c: 50 },
+      ].map(r=>({w:Math.min(1,r.w), c:r.c}));
+      let num=0, den=0; for(const r of rules){ num+=r.w*r.c; den+=r.w; }
+      const score = den ? num/den : 0;
+      let label='Poor', badge='status-poor';
+      if (score > 85){ label='Excellent'; badge='status-good'; }
+      else if (score > 65){ label='Good'; badge='status-good'; }
+      else if (score > 35){ label='Fair'; badge='status-fair'; }
+      return { score:+score.toFixed(2), label, badge };
+    }
+
+    /* ===== Dummy data state ===== */
+    const MAX_POINTS = 20;
+    let series = { labels: [], ph: [], ntu: [], temp: [] };
+
+    function nowLabel(){
+      const d = new Date();
+      return d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    }
+    function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+    // PURE RANDOM (tanpa drift) – sebaran penuh
+    function nextPoint(){
+    const pH  = +(Math.random() * 14).toFixed(2);     // 0 – 14
+    const ntu = Math.round(Math.random() * 1000);     // 0 – 1000
+    const t   = +(Math.random() * 40).toFixed(1);     // 0 – 40
+    return { pH, ntu, t };
+    }
+    function pushPoint(p){
+      series.labels.push(nowLabel());
+      series.ph.push(p.pH);
+      series.ntu.push(p.ntu);
+      series.temp.push(p.t);
+      if (series.labels.length > MAX_POINTS){
+        series.labels.shift(); series.ph.shift(); series.ntu.shift(); series.temp.shift();
+      }
+    }
+    function resetSeries(){ series = { labels: [], ph: [], ntu: [], temp: [] }; }
+
+    /* ===== Chart.js ===== */
+    const ctx = $('#lineChart'); let chart;
+    function getChartColors(){
+      return {
+        text: getComputedStyle(root).getPropertyValue('--chart-txt').trim(),
+        grid: getComputedStyle(root).getPropertyValue('--chart-grid').trim(),
+        bg:   getComputedStyle(root).getPropertyValue('--chart-bg').trim(),
+      };
+    }
+    function buildChart(){
+      const C = getChartColors();
+      chart = new Chart(ctx, {
+        type:'line',
+        data:{
+          labels: series.labels,
+          datasets:[
+            { label:'pH',  data: series.ph,  borderColor:'#845ef7', backgroundColor:'transparent', tension:.32, borderWidth:2, pointRadius:0 },
+            { label:'NTU', data: series.ntu, borderColor:'#12b886', backgroundColor:'transparent', tension:.32, borderWidth:2, pointRadius:0, yAxisID:'y1' },
+            { label:'Suhu (°C)', data: series.temp, borderColor:'#fd7e14', backgroundColor:'transparent', tension:.32, borderWidth:2, pointRadius:0 },
+          ]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+          plugins:{ legend:{ labels:{ color:C.text, font:{weight:'600'} } }, tooltip:{enabled:true} },
+          scales:{
+            x:{ ticks:{color:C.text}, grid:{color:C.grid} },
+            y:{ ticks:{color:C.text}, grid:{color:C.grid}, suggestedMin:6, suggestedMax:9 },
+            y1:{ position:'right', ticks:{color:C.text}, grid:{drawOnChartArea:false, color:C.grid}, suggestedMin:0, suggestedMax:600 }
+          }
+        }
+      });
+      ctx.style.background = C.bg;
+    }
+    function refreshChartTheme(){
+      if (!chart) return;
+      const C = getChartColors();
+      chart.options.plugins.legend.labels.color = C.text;
+      chart.options.scales.x.ticks.color = C.text;
+      chart.options.scales.x.grid.color = C.grid;
+      chart.options.scales.y.ticks.color = C.text;
+      chart.options.scales.y.grid.color = C.grid;
+      chart.options.scales.y1.ticks.color = C.text;
+      chart.options.scales.y1.grid.color = C.grid;
+      ctx.style.background = C.bg;
+      chart.update('none');
+    }
+    new MutationObserver(refreshChartTheme).observe(root,{attributes:true,attributeFilter:['data-bs-theme']});
+
+    /* ===== UI summary ===== */
+    function updateSummary(p){
+      $('#sumPH').textContent = p ? p.pH.toFixed(2) : '—';
+      $('#sumNTU').textContent = p ? Math.round(p.ntu) : '—';
+      $('#sumTEMP').textContent = p ? `${p.t.toFixed(1)}°C` : '—';
+      const {score,label,badge} = p ? computeWaterQuality(p.pH,p.ntu,p.t) : {score:NaN,label:'—',badge:''};
+      if (!isNaN(score)){
+        $('#sumSCORE').textContent = score.toFixed(2);
+        const status = $('#sumSTATUS');
+        status.textContent = label;
+        status.className = `badge-status ${badge}`;
+        $('#bigScore').textContent = score.toFixed(2);
+        const bigLabel = $('#bigLabel');
+        bigLabel.textContent = label;
+        bigLabel.className = `badge px-3 py-2 ${label==='Excellent'||label==='Good'?'text-bg-success':(label==='Fair'?'text-bg-warning':'text-bg-danger')}`;
+      } else {
+        $('#sumSCORE').textContent = '—';
+        $('#sumSTATUS').textContent = '—';
+        $('#sumSTATUS').className = 'badge-status';
+        $('#bigScore').textContent = '—';
+        $('#bigLabel').textContent = '—';
+        $('#bigLabel').className = 'badge text-bg-secondary px-3 py-2';
+      }
+    }
+
+    /* ===== Controls ===== */
+    let intervalMs = 3000; let timer = null;
+    const runIndicator = $('#runIndicator'), runText = $('#runText');
+    const btnStart = $('#btnStart'), btnStop = $('#btnStop'), btnDummy = $('#btnDummy');
+    const lastUpdate = $('#lastUpdate');
+
+    function setRunning(running){
+      if (running){
+        runText.textContent = 'Running';
+        runIndicator.querySelector('.dot').className = 'dot green';
+        btnStart.disabled = true; btnStop.disabled = false;
+      } else {
+        runText.textContent = 'Stopped';
+        runIndicator.querySelector('.dot').className = 'dot red';
+        btnStart.disabled = false; btnStop.disabled = true;
+      }
+    }
+    setRunning(false);
+
+    $('#intervalMenu').addEventListener('click', (e) => {
+      const a = e.target.closest('[data-ival]'); if (!a) return; e.preventDefault();
+      intervalMs = Number(a.getAttribute('data-ival'));
+      $('#intervalLabel').textContent = a.textContent.trim();
+      $$('#intervalMenu .dropdown-item').forEach(x => x.classList.remove('active')); a.classList.add('active');
+      if (timer){ clearInterval(timer); timer = setInterval(tick, intervalMs); }
+    });
+
+    function redrawChart(){
+      chart.data.labels = series.labels;
+      chart.data.datasets[0].data = series.ph;
+      chart.data.datasets[1].data = series.ntu;
+      chart.data.datasets[2].data = series.temp;
+      chart.update('none');
+    }
+
+    function tick(){
+      const prev = { pH: series.ph.at(-1) ?? 7.2, ntu: series.ntu.at(-1) ?? 30, t: series.temp.at(-1) ?? 28 };
+      const p = nextPoint(prev);
+      pushPoint(p);
+      redrawChart();
+      updateSummary(p);
+      lastUpdate.textContent = new Date().toLocaleString('id-ID');
+    }
+
+    btnStart.addEventListener('click', () => {
+      if (timer) return;
+      if (series.labels.length === 0){
+        const p0 = { pH: 7.2, ntu: 30, t: 28.0 };
+        pushPoint(p0); redrawChart(); updateSummary(p0);
+        lastUpdate.textContent = new Date().toLocaleString('id-ID');
+      }
+      timer = setInterval(tick, intervalMs);
+      setRunning(true);
+    });
+
+    btnStop.addEventListener('click', () => {
+      clearInterval(timer); timer = null; setRunning(false);
+    });
+
+    btnDummy.addEventListener('click', () => {
+      const wasRunning = !!timer; if (wasRunning){ clearInterval(timer); timer = null; }
+      setRunning(false);
+      resetSeries();
+      let p = { pH: 7.2, ntu: 30, t: 28.0 };
+      for (let i=0;i<12;i++){ p = nextPoint(p); pushPoint(p); }
+      redrawChart(); updateSummary(p);
+      lastUpdate.textContent = new Date().toLocaleString('id-ID');
+    });
+
+    buildChart();
+    updateSummary(null);
+  </script>
+  <script src="js/sidebar.js  "></script>
+</body>
+</html>
